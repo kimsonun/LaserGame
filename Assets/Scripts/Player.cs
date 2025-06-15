@@ -14,6 +14,10 @@ public class Player : MonoBehaviour
     public int penetrationMax = 2;
     public float maxLaserRange = 50f;
 
+    [Header("Effects")]
+    public GameObject laserBeamImpactPrefab;
+    public GameObject damageTextPrefab;
+
     private Camera mainCamera;
     private bool isShooting = false;
     private GameObject currentLaser;
@@ -64,7 +68,7 @@ public class Player : MonoBehaviour
     {
         if (Input.GetMouseButton(0)) // Continuous while held
         {
-            if (!isShooting)
+            if (!isShooting && !GameManager.Instance.IsGamePaused())
             {
                 StartShooting();
             }
@@ -115,6 +119,6 @@ public class Player : MonoBehaviour
 
         currentLaser = Instantiate(laserPrefab, weaponTip.position, transform.rotation);
         Laser laserScript = currentLaser.GetComponent<Laser>();
-        laserScript.Initialize(laserDamage, damageInterval, bounceMax, penetrationMax, maxLaserRange, this);
+        laserScript.Initialize(laserDamage, damageInterval, bounceMax, penetrationMax, maxLaserRange, this, laserBeamImpactPrefab, damageTextPrefab);
     }
 }

@@ -177,4 +177,9 @@ public class GameManager : MonoBehaviour
         pauseUI.SetActive(false);
         endUI.SetActive(true);
     }
+
+    public bool IsGamePaused()
+    {
+        return gamePaused;
+    }
 }

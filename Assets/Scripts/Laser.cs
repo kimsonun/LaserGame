@@ -9,12 +9,18 @@ public class Laser : MonoBehaviour
     private int penetrationMax;
     private float maxRange;
     private Player owner;
+    private GameObject impactPrefab;
+    private GameObject damageTextPrefab;
 
     private LineRenderer lineRenderer;
     private List<Vector3> laserPoints;
     private Dictionary<Enemy, float> lastDamageTime;
     private List<Enemy> enemiesInBeam;
     private Transform beamStart;
+
+    // Impact effect management
+    private List<GameObject> activeImpacts;
+    private List<Vector3> impactPositions;
 
     void Start()
     {
@@ -36,9 +42,11 @@ public class Laser : MonoBehaviour
         laserPoints = new List<Vector3>();
         lastDamageTime = new Dictionary<Enemy, float>();
         enemiesInBeam = new List<Enemy>();
+        activeImpacts = new List<GameObject>();
+        impactPositions = new List<Vector3>();
     }
 
-    public void Initialize(float damage, float damageInterval, int bounceMax, int penetrationMax, float maxRange, Player owner)
+    public void Initialize(float damage, float damageInterval, int bounceMax, int penetrationMax, float maxRange, Player owner, GameObject impactPrefab, GameObject damageTextPrefab)
     {
         this.damage = damage;
         this.damageInterval = damageInterval;
@@ -46,6 +54,8 @@ public class Laser : MonoBehaviour
         this.penetrationMax = penetrationMax;
         this.maxRange = maxRange;
         this.owner = owner;
+        this.impactPrefab = impactPrefab;
+        this.damageTextPrefab = damageTextPrefab;
     }
 
     void Update()
@@ -53,16 +63,29 @@ public class Laser : MonoBehaviour
         DamageEnemiesInBeam();
     }
 
+    void OnDestroy()
+    {
+        // Clean up impact effects when laser is destroyed
+        foreach (GameObject impact in activeImpacts)
+        {
+            if (impact != null)
+                Destroy(impact);
+        }
+        activeImpacts.Clear();
+    }
+
     public void UpdateLaserBeam(Vector3 startPosition, Vector3 direction)
     {
         CalculateLaserPath(startPosition, direction);
         UpdateLineRenderer();
         UpdateEnemiesInBeam();
+        UpdateImpactEffects();
     }
 
     void CalculateLaserPath(Vector3 startPos, Vector3 direction)
     {
         laserPoints.Clear();
+        impactPositions.Clear();
         laserPoints.Add(startPos);
 
         Vector3 currentPos = startPos;
@@ -83,6 +106,9 @@ public class Laser : MonoBehaviour
 
                 if (hit.collider.CompareTag("Enemy"))
                 {
+                    // Add impact effect at enemy hit point
+                    impactPositions.Add(hit.point);
+
                     if (penetrations < penetrationMax)
                     {
                         penetrations++;
@@ -98,6 +124,9 @@ public class Laser : MonoBehaviour
                 }
                 else if (hit.collider.CompareTag("Obstacle"))
                 {
+                    // Add impact effect at obstacle hit point
+                    impactPositions.Add(hit.point);
+
                     if (bounces < bounceMax)
                     {
                         bounces++;
@@ -113,7 +142,8 @@ public class Laser : MonoBehaviour
                 }
                 else
                 {
-                    // Hit something else, stop laser
+                    // Hit something else, add impact and stop laser
+                    impactPositions.Add(hit.point);
                     break;
                 }
             }
@@ -123,6 +153,27 @@ public class Laser : MonoBehaviour
                 Vector3 endPoint = currentPos + currentDirection * remainingRange;
                 laserPoints.Add(endPoint);
                 break;
+            }
+        }
+    }
+
+    void UpdateImpactEffects()
+    {
+        // Clean up existing impacts
+        foreach (GameObject impact in activeImpacts)
+        {
+            if (impact != null)
+                Destroy(impact);
+        }
+        activeImpacts.Clear();
+
+        // Create new impacts at current positions
+        if (impactPrefab != null)
+        {
+            foreach (Vector3 position in impactPositions)
+            {
+                GameObject impact = Instantiate(impactPrefab, position, Quaternion.identity);
+                activeImpacts.Add(impact);
             }
         }
     }
@@ -169,8 +220,8 @@ public class Laser : MonoBehaviour
                 enemy.TakeDamage(damage);
                 lastDamageTime[enemy] = currentTime;
 
-                // Show damage text
-                DamageText.ShowDamage(enemy.transform.position + Vector3.up * 2f, damage);
+                // Show damage text using prefab
+                ShowDamageText(enemy.transform.position + Vector3.up * 2f, damage);
             }
         }
 
@@ -184,6 +235,21 @@ public class Laser : MonoBehaviour
         foreach (Enemy enemy in enemiesToRemove)
         {
             lastDamageTime.Remove(enemy);
+        }
+    }
+
+    void ShowDamageText(Vector3 worldPosition, float damageAmount)
+    {
+        if (damageTextPrefab != null)
+        {
+            GameObject damageTextObj = Instantiate(damageTextPrefab, worldPosition, Quaternion.identity);
+
+            // If the prefab has a DamageTextController component, initialize it
+            DamageTextController controller = damageTextObj.GetComponent<DamageTextController>();
+            if (controller != null)
+            {
+                controller.Initialize(damageAmount);
+            }
         }
     }
 
