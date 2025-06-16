@@ -14,6 +14,7 @@ public class Enemy : MonoBehaviour
     public Slider healthSlider;
     public TextMeshProUGUI healthText;
 
+    private Vector3 healthDirection;
     private float currentHP;
     private Vector3 moveDirection;
     private float lastDirectionChange;
@@ -44,7 +45,9 @@ public class Enemy : MonoBehaviour
         // Make health bar face camera
         if (healthCanvas != null)
         {
-            healthCanvas.transform.LookAt(Camera.main.transform);
+            healthDirection = Camera.main.transform.position - healthCanvas.transform.position;
+            healthDirection.x = 0f; // ignore vertical difference
+            healthCanvas.transform.rotation = Quaternion.LookRotation(healthDirection);
             healthCanvas.transform.Rotate(0, 180, 0);
         }
     }

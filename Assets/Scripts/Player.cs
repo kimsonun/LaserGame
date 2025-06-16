@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Player : MonoBehaviour
 {
@@ -66,7 +67,7 @@ public class Player : MonoBehaviour
 
     void HandleShooting()
     {
-        if (Input.GetMouseButton(0)) // Continuous while held
+        if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject()) // Continuous while held
         {
             if (!isShooting && !GameManager.Instance.IsGamePaused())
             {

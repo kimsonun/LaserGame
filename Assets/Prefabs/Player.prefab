@@ -142,6 +142,7 @@ GameObject:
   - component: {fileID: 7373214826068830639}
   - component: {fileID: 830892687107906491}
   - component: {fileID: 2541076885545122466}
+  - component: {fileID: 8959257474445054196}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -244,8 +245,26 @@ MonoBehaviour:
   moveSpeed: 5
   laserPrefab: {fileID: 0}
   weaponTip: {fileID: 0}
-  laserSpeed: 10
   laserDamage: 50
   damageInterval: 0.5
   bounceMax: 3
   penetrationMax: 2
+  maxLaserRange: 50
+  laserBeamImpactPrefab: {fileID: 0}
+  damageTextPrefab: {fileID: 0}
+--- !u!54 &8959257474445054196
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7482710164349731680}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 80
+  m_CollisionDetection: 0
